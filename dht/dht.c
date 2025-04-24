@@ -111,6 +111,7 @@ while(gpio_get(gpio)==0){
     sleep_us(5);
     if(count==POLLING_LIMIT){
         printf("1 bad\n");
+        return;
     }
 }
 
@@ -121,6 +122,7 @@ while(gpio_get(gpio)==1){
     sleep_us(5);
     if(count==POLLING_LIMIT){
         printf("2 bad\n");
+        return;
     }
 }
 

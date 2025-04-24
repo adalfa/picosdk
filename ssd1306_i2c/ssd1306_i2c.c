@@ -45,7 +45,7 @@
 
 // 400 is usual, but often these can be overclocked to improve display response.
 // Tested at 1000 on both 32 and 84 pixel height devices and it worked.
-#define SSD1306_I2C_CLK             400
+#define SSD1306_I2C_CLK             1000
 //#define SSD1306_I2C_CLK             1000
 
 
