@@ -2,4 +2,4 @@
 
 #define MG_ENABLE_LWIP 1
 #define MG_ENABLE_PACKED_FS 1
-#define MG_TLS MG_TLS_BUILTIN
+#define MG_TLS MG_TLS_MBED

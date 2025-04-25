@@ -149,7 +149,7 @@ for(int i=0;i<40;i++){
 //check if raw data is valid
 if(raw[4] != ((raw[0] + raw[1] + raw[2] + raw[3]) & 0xFF)){
 
-    printf("Bad data\n");
+    printf("Bad data2\n");
 }
 
 printf("2:%04x\n",raw[2]);

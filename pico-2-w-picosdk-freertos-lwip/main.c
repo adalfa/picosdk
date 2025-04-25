@@ -9,11 +9,11 @@
 #include "mongoose.h"
 #include "net.h"
 
-#define WIFI_SSID "XXXX-WiFi_XXXX"
-#define WIFI_PASS "XXXXXX"
+#define WIFI_SSID "XXXX-WiFi_XXXXX"
+#define WIFI_PASS ""
 
 static const char *s_url =
-    "mqtt://192.168.1.190";
+    "mqtts://test.mosquitto.org";
 static const char *s_rx_topic = "rw";
 static const char *s_tx_topic = "rw";
 static int s_qos = 1;
@@ -38,6 +38,7 @@ static void mongoose(void *args) {
 
   MG_INFO(("Initialising application..."));
   struct mg_mqtt_opts opts = {.clean = true,
+                              .client_id="rp_2350"
                               
                               };
   
@@ -66,10 +67,10 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
     // c->is_hexdumping = 1;
   } else if (ev == MG_EV_CONNECT) {
     if (mg_url_is_ssl(s_url)) {
-      struct mg_tls_opts opts = { .ca = mg_unpacked("/ca.crt"),
+      struct mg_tls_opts opts = { .ca = mg_unpacked("/mosquitto.org.cr"),
                                  //.cert = mg_unpacked("/crt.pem"),
                                  //.key = mg_unpacked("/key.pem"),
-                                 .skip_verification=1,
+                                 //.skip_verification=1,
                                  .name = mg_url_host(s_url)};
 
                                  MG_INFO(("TLS_INIT start"));
