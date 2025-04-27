@@ -35,7 +35,12 @@ static void ntp_result(NTP_T* state, int status, time_t *result) {
         struct tm *utc = gmtime(result);
         printf("got ntp response: %02d/%02d/%04d %02d:%02d:%02d\n", utc->tm_mday, utc->tm_mon + 1, utc->tm_year + 1900,
                utc->tm_hour, utc->tm_min, utc->tm_sec);
-    }
+               
+               time_t tt=mktime(utc);
+               struct timeval tv;
+               tv.tv_sec=tt;
+               settimeofday(&tv,NULL);
+            }
 
     if (state->ntp_resend_alarm > 0) {
         cancel_alarm(state->ntp_resend_alarm);
@@ -129,6 +134,9 @@ void run_ntp_test(void) {
     if (!state)
         return;
     while(true) {
+        time_t now = time(NULL);
+
+        printf("date %s\n",ctime(&now));
         if (absolute_time_diff_us(get_absolute_time(), state->ntp_test_time) < 0 && !state->dns_request_sent) {
             // Set alarm in case udp requests are lost
             state->ntp_resend_alarm = add_alarm_in_ms(NTP_RESEND_TIME, ntp_failed_handler, state, true);
@@ -160,6 +168,7 @@ void run_ntp_test(void) {
         // if you are not using pico_cyw43_arch_poll, then WiFI driver and lwIP work
         // is done via interrupt in the background. This sleep is just an example of some (blocking)
         // work you might be doing.
+        
         sleep_ms(1000);
 #endif
     }

@@ -30,8 +30,8 @@ include(pico_sdk_import.cmake)
 
 project(picow_ntp_client C CXX ASM)
 
-set(WIFI_SSID "Your Wi-Fi SSID")
-set(WIFI_PASSWORD "Your Wi-Fi Password")
+set(WIFI_SSID "")
+set(WIFI_PASSWORD "")
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -53,7 +53,9 @@ target_link_libraries(picow_ntp_client_background
         pico_cyw43_arch_lwip_threadsafe_background
         pico_stdlib
         )
-
+        pico_enable_stdio_usb(picow_ntp_client_background 1)
+        pico_enable_stdio_uart(picow_ntp_client_background 0)
+        
 pico_add_extra_outputs(picow_ntp_client_background)
 
 add_executable(picow_ntp_client_poll
@@ -71,5 +73,8 @@ target_link_libraries(picow_ntp_client_poll
         pico_cyw43_arch_lwip_poll
         pico_stdlib
         )
+        pico_enable_stdio_usb(picow_ntp_client_poll 1)
+        pico_enable_stdio_uart(picow_ntp_client_poll 0)
+        
 pico_add_extra_outputs(picow_ntp_client_poll)
 
