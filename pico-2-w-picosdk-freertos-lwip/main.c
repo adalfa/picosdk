@@ -10,18 +10,17 @@
 #include "mongoose.h"
 #include "net.h"
 
-#define WIFI_SSID "xxx"
+#define WIFI_SSID "x"
 #define WIFI_PASS ""
 
 static const char *s_url =
     "mqtts://iot-adf-pico.azure-devices.net";
-static const char *s_rx_topic = "devices/rp2350_2/messages/devicebound/";
-static const char *s_tx_topic = "devices/rp2350_2/messages/events/";
+static const char *s_rx_topic = "devices/rp2350_1/messages/#";
+static const char *s_tx_topic = "devices/rp2350_1/messages/events/";
+static const char *deviceid="rp2350_1";
 static int s_qos = 1;
 static struct mg_connection *s_sntp_conn = NULL;
 static time_t s_boot_timestamp = 0;
-static SemaphoreHandle_t bin_time;
-static SemaphoreHandle_t bin_conn;
 
 
 
@@ -40,7 +39,7 @@ static void sfn(struct mg_connection *c, int ev, void *ev_data) {
       struct timeval tv;
                tv.tv_sec=tt;
                tv.tv_usec=0;
-               settimeofday(&tv,NULL);
+              settimeofday(&tv,NULL);
     }
     
   } else if (ev == MG_EV_CLOSE) {
@@ -114,10 +113,10 @@ static void mongoose(void *args) {
   printCurrentTime();
   }
   MG_INFO(("Initialising application..."));
-  struct mg_mqtt_opts opts = {.clean = true,
-                              .user="iot-adf-pico.azure-devices.net/rp2350_2/?api-version=2020-09-30&DeviceClientType=c%2F1.5.0-beta.1(ard;rpipico)",
-                              .client_id="rp2350_2",
-                              .pass="SharedAccessSignature sr=iot-adf-pico.azure-devices.net%2Fdevices%2Frp2350_2&sig=A42931p%2Ft4oR1i4AQSzf1naranxlONEnhufl7gnvLqU%3D&se=1745749479",
+  struct mg_mqtt_opts opts = {.clean = false,
+                              .user="iot-adf-pico.azure-devices.net/rp2350_1/?api-version=2020-09-30",
+                              .client_id=deviceid,
+                              .pass=NULL,
                               .topic=(char *)s_tx_topic
                               
                               };
@@ -152,8 +151,8 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
   } else if (ev == MG_EV_CONNECT) {
     if (mg_url_is_ssl(s_url)) {
       struct mg_tls_opts opts = { .ca = mg_unpacked("/IoTHubRootCA.crt.pem"),
-                                 //.cert = mg_unpacked("/65DF206050F998666C9DF4FAE3E6390B.pem"),
-                                 //.key = mg_unpacked("/rp2350_1.key"),
+                                 .cert = mg_unpacked("/65DF206050F998666C9DF4FAE3E6390B.pem"),
+                                 .key = mg_unpacked("/rp2350_1.key"),
                                  //.skip_verification=1,
                                  .name =mg_url_host(s_url)
                                 };
@@ -169,19 +168,21 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
     // MQTT connect is successful
     struct mg_str topic = mg_str(s_rx_topic);
     MG_INFO(("Connected to %s", s_url));
+    
     MG_INFO(("Subscribing to %s", s_rx_topic));
-    //struct mg_mqtt_opts sub_opts;
-    //memset(&sub_opts, 0, sizeof(sub_opts));
-    //sub_opts.topic = topic;
-    //sub_opts.qos = s_qos;
-    //mg_mqtt_sub(c, &sub_opts);
+    struct mg_mqtt_opts sub_opts;
+    memset(&sub_opts, 0, sizeof(sub_opts));
+    sub_opts.topic = topic;
+    sub_opts.qos = s_qos;
+    mg_mqtt_sub(c, &sub_opts);
+    
     c->data[0] = 'X';  // Set a label that we're logged in
   } else if (ev == MG_EV_MQTT_MSG) {
     // When we receive MQTT message, print it
     struct mg_mqtt_message *mm = (struct mg_mqtt_message *) ev_data;
     MG_INFO(("Received on %.*s : %.*s", (int) mm->topic.len, mm->topic.buf,
              (int) mm->data.len, mm->data.buf));
-   } else if (ev == MG_EV_POLL && c->data[0] == 'X' ) { 
+   } else if (ev == MG_EV_POLL  && c->data[0] == 'X') { 
   //else if (ev == MG_EV_POLL && c->data[0] == 'X') {
     static unsigned long prev_second;
     unsigned long now_second = (*(unsigned long *) ev_data) / 1000;
@@ -209,8 +210,8 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
 int main(void) {
   // initialize stdio
   stdio_init_all(); 
-  bin_time = xSemaphoreCreateBinary(); 
-  bin_conn = xSemaphoreCreateBinary(); 
+  //bin_time = xSemaphoreCreateBinary(); 
+  //bin_conn = xSemaphoreCreateBinary(); 
   MG_INFO(("Start"));
   
   
