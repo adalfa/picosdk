@@ -10,13 +10,13 @@
 #include "mongoose.h"
 #include "net.h"
 
-#define WIFI_SSID "x"
+#define WIFI_SSID ""
 #define WIFI_PASS ""
 
 static const char *s_url =
-    "mqtts://iot-adf-pico.azure-devices.net";
-static const char *s_rx_topic = "devices/rp2350_1/messages/#";
-static const char *s_tx_topic = "devices/rp2350_1/messages/events/";
+    "mqtts://a3c5ntvcgddcz8-ats.iot.eu-west-1.amazonaws.com";
+static const char *s_rx_topic = "test";
+static const char *s_tx_topic = "$aws/rules/test";
 static const char *deviceid="rp2350_1";
 static int s_qos = 1;
 static struct mg_connection *s_sntp_conn = NULL;
@@ -114,8 +114,8 @@ static void mongoose(void *args) {
   }
   MG_INFO(("Initialising application..."));
   struct mg_mqtt_opts opts = {.clean = false,
-                              .user="iot-adf-pico.azure-devices.net/rp2350_1/?api-version=2020-09-30",
-                              .client_id=deviceid,
+                              .user=NULL,
+                              .client_id=(char *)deviceid,
                               .pass=NULL,
                               .topic=(char *)s_tx_topic
                               
@@ -150,7 +150,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
      c->is_hexdumping = 1;
   } else if (ev == MG_EV_CONNECT) {
     if (mg_url_is_ssl(s_url)) {
-      struct mg_tls_opts opts = { .ca = mg_unpacked("/IoTHubRootCA.crt.pem"),
+      struct mg_tls_opts opts = { .ca = mg_unpacked("/amazonrootca.pem"),
                                  .cert = mg_unpacked("/65DF206050F998666C9DF4FAE3E6390B.pem"),
                                  .key = mg_unpacked("/rp2350_1.key"),
                                  //.skip_verification=1,
