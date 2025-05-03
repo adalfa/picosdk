@@ -14,11 +14,11 @@
 #define WIFI_PASS ""
 
 static const char *s_url =
-    "mqtts://a3c5ntvcgddcz8-ats.iot.eu-west-1.amazonaws.com";
-static const char *s_rx_topic = "test";
-static const char *s_tx_topic = "$aws/rules/test";
+    "mqtts://evgn-adf-mcu.italynorth-1.ts.eventgrid.azure.net";
+static const char *s_rx_topic = "test/test2";
+static const char *s_tx_topic = "test/test1";
 static const char *deviceid="rp2350_1";
-static int s_qos = 1;
+static int s_qos = 0;
 static struct mg_connection *s_sntp_conn = NULL;
 static time_t s_boot_timestamp = 0;
 
@@ -113,11 +113,14 @@ static void mongoose(void *args) {
   printCurrentTime();
   }
   MG_INFO(("Initialising application..."));
-  struct mg_mqtt_opts opts = {.clean = false,
-                              .user=NULL,
+  //for Azure seehttps://learn.microsoft.com/en-us/azure/event-grid/mqtt-client-certificate-authentication#self-signed-client-certificate---thumbprint
+  struct mg_mqtt_opts opts = {.clean = true,
+                              .user=(char *)deviceid,
                               .client_id=(char *)deviceid,
-                              .pass=NULL,
-                              .topic=(char *)s_tx_topic
+                             .version= 5
+                              
+                              //.pass=NULL,
+                              //.topic=(char *)s_tx_topic
                               
                               };
   
@@ -150,9 +153,10 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
      c->is_hexdumping = 1;
   } else if (ev == MG_EV_CONNECT) {
     if (mg_url_is_ssl(s_url)) {
-      struct mg_tls_opts opts = { .ca = mg_unpacked("/amazonrootca.pem"),
+      struct mg_tls_opts opts = { .ca = mg_unpacked("/DigiCertGlobalRootG3.crt.pem"),
                                  .cert = mg_unpacked("/65DF206050F998666C9DF4FAE3E6390B.pem"),
                                  .key = mg_unpacked("/rp2350_1.key"),
+                                 
                                  //.skip_verification=1,
                                  .name =mg_url_host(s_url)
                                 };
