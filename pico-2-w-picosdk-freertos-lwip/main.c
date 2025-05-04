@@ -14,9 +14,9 @@
 #define WIFI_PASS ""
 
 static const char *s_url =
-    "mqtts://evgn-adf-mcu.italynorth-1.ts.eventgrid.azure.net";
-static const char *s_rx_topic = "test/test2";
-static const char *s_tx_topic = "test/test1";
+    "mqtts://iot-adf-pico.azure-devices.net";
+static const char *s_rx_topic = "devices/rp2350_1/messages/events/";
+static const char *s_tx_topic = "devices/rp2350_1/messages/events/";
 static const char *deviceid="rp2350_1";
 static int s_qos = 0;
 static struct mg_connection *s_sntp_conn = NULL;
@@ -114,12 +114,14 @@ static void mongoose(void *args) {
   }
   MG_INFO(("Initialising application..."));
   //for Azure seehttps://learn.microsoft.com/en-us/azure/event-grid/mqtt-client-certificate-authentication#self-signed-client-certificate---thumbprint
+
+  //for Azure iothub mg_str required...
   struct mg_mqtt_opts opts = {.clean = true,
-                              .user=(char *)deviceid,
-                              .client_id=(char *)deviceid,
-                             .version= 5
+                              .user=mg_str("iot-adf-pico.azure-devices.net/rp2350_1"),
+                              .client_id=mg_str("rp2350_1"),
+                             //.version= 5
                               
-                              //.pass=NULL,
+                              //.pass="",
                               //.topic=(char *)s_tx_topic
                               
                               };
@@ -153,7 +155,7 @@ static void fn(struct mg_connection *c, int ev, void *ev_data) {
      c->is_hexdumping = 1;
   } else if (ev == MG_EV_CONNECT) {
     if (mg_url_is_ssl(s_url)) {
-      struct mg_tls_opts opts = { .ca = mg_unpacked("/DigiCertGlobalRootG3.crt.pem"),
+      struct mg_tls_opts opts = { .ca = mg_unpacked("/IoTHubRootCA.crt.pem"),
                                  .cert = mg_unpacked("/65DF206050F998666C9DF4FAE3E6390B.pem"),
                                  .key = mg_unpacked("/rp2350_1.key"),
                                  
